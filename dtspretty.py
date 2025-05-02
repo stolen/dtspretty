@@ -17,10 +17,10 @@ def load_yaml_rules(yaml_content):
     for key, value in rules.items():
         if isinstance(value, list):
             # Treat a list directly as a struct
-            rules[key] = {"struct": value}
+            rules[key] = {"patterns": [f'^{key}$'], "struct": value}
         elif isinstance(value, dict):
             # Ensure the dictionary has 'patterns' or 'struct'
-            rules[key].setdefault("patterns", [])
+            rules[key].setdefault("patterns", [f'^{key}$'])
         else:
             raise ValueError(f"Unexpected rule format for key '{key}': {value}")
     

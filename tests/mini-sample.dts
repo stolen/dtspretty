@@ -5,6 +5,7 @@
 
  xin24m: xin24m {
   #clock-cells = <0>;
+  no-value-prop;
  };
 
  cru: clock-controller@ff2b0000 {

@@ -1,10 +1,10 @@
 clock:
-  patterns: ['^clocks$']
+  patterns: ['^clocks$', '-clocks$']
 gpio:
   patterns: ['^gpios?$', '-gpios?']
 pinctrl:
   patterns: ['^pinctrl-']
-  struct: [ref]
+  struct: [ref, ref, ref, ref, ref]
 rockchip,pins:
   patterns: ['^rockchip,pins$']
   struct: [d, d, d, ref]

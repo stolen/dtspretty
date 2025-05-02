@@ -1,4 +1,4 @@
-import re
+import re, sys
 
 def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
     """Restore references in the DTS structure following rules."""
@@ -6,7 +6,7 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
         """Resolve property references based on rules."""
         for rule_name, rule in rules.items():
             patterns = rule.get("patterns", [])
-            if any(re.match(pattern, prop) for pattern in patterns):
+            if any(re.search(pattern, prop) for pattern in patterns):
                 # If property matches a rule, process it using the rule's logic
                 return resolve_struct(value, rule_name, rule)
         # If no matching rule, return the value as-is
@@ -23,6 +23,8 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
             if static_struct:
                 tmp = []
                 for j in static_struct:
+                    if i >= len(value):
+                        continue
                     if j == 'ref':
                         ref_path = phandle_to_path.get(value[i])
                         ref_symbol = f"&{path_to_symbol.get(ref_path, ref_path.lstrip('/'))}"

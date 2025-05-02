@@ -1,3 +1,5 @@
+import sys
+
 def generate_restored_dts(restored_dts, path_to_symbol):
     """
     Generate a DTS string from the restored DTS dictionary and the path-to-symbol mapping.
@@ -18,10 +20,14 @@ def generate_restored_dts(restored_dts, path_to_symbol):
         rendered = ""
         indent_str = "    " * indent  # Create indentation string
         for key, value in node.items():
+            if key == 'phandle':
+                continue
             current_path = f"{path}/{key}".strip("/")
             symbol = path_to_symbol.get(f"/{current_path}", None)
             
-            if isinstance(value, dict):
+            if value == True:
+                rendered += f"{indent_str}{key};\n"
+            elif isinstance(value, dict):
                 # Render subnodes
                 node_header = f"{symbol}: {key}" if symbol else key
                 rendered += f"{indent_str}{node_header} {{\n"
@@ -42,6 +48,7 @@ def generate_restored_dts(restored_dts, path_to_symbol):
                         elements.append("<" + str(item) + ">")
                 rendered += ", ".join(elements) + ";\n"
             else:
+                print(f'rendering {key} = {value}', file=sys.stderr)
                 # Render single property values
                 rendered += f"{indent_str}{key} = <{value}>;\n"
         return rendered

@@ -53,6 +53,9 @@ def parse_dts_content(dts_content):
                 current_node[key] = value[0]
             else:
                 current_node[key] = value
+        else:
+            key = line.strip().rstrip(";")
+            current_node[key] = True
 
     return dts
 
@@ -68,6 +71,7 @@ if __name__ == "__main__":
 
         xin24m {
             #clock-cells = <0x00>;
+            simple-property;
             phandle = <0x01>;
         };
 
