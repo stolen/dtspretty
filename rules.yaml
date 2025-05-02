@@ -1,0 +1,20 @@
+# These two notations are equivalent:
+# exampleprop: [ref, x, d, ref]
+# exampleprop:
+#   patterns: ['^exampleprop$']
+#   struct: [ref, x, d, ref]
+#
+# If property name matches pattern, struct is applied for dereferencing phandles
+# If no struct is given, consider struct is dynamic:
+#  - first element is a ref
+#  - if property being parsed is named 'clock', then number of cells is indicated by '#clock-cells' property of referenced object
+#  - cells follow ref and are kept as numbers
+#  - after cells comes next ref
+clock:
+  patterns: ['^clocks$']
+gpio:
+  patterns: ['^gpios?$', '-gpios?']
+pinctrl:
+  patterns: ['^pinctrl-']
+  struct: [ref]
+rockchip,pins: [d, d, d, ref]
