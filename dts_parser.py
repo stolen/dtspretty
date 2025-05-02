@@ -19,7 +19,13 @@ def parse_dts_content(dts_content):
             if ":" in node_name:
                 node_name = node_name.split(":")[0]  # Remove labels like `xin24m:`
             new_node = {}
-            current_node[node_name] = new_node
+            if node_name in current_node:
+                # Handle duplicate nodes by converting to a list
+                if not isinstance(current_node[node_name], list):
+                    current_node[node_name] = [current_node[node_name]]
+                current_node[node_name].append(new_node)
+            else:
+                current_node[node_name] = new_node
             stack.append(current_node)
             current_node = new_node
             node_stack.append(node_name)
