@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys, argparse
 import yaml
 import json
@@ -5,6 +7,7 @@ import re
 from dts_parser import parse_dts_content
 from parse_dts_symbols import parse_dts_symbols
 from dereference_phandles import dereference_phandles
+from generate_restored_dts import generate_restored_dts
 
 def load_yaml_rules(yaml_content):
     """Load dereferencing rules from YAML content."""
@@ -24,12 +27,6 @@ def load_yaml_rules(yaml_content):
     return rules
 
 
-def generate_restored_dts(dts):
-    """Generate DTS file content from the restored structure."""
-    # Implement DTS generation logic
-    # For simplicity, we return a JSON string in this example
-    return json.dumps(dts, indent=2)
-
 # Example usage
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Restore references in decompiled DTS")
@@ -45,16 +42,16 @@ if __name__ == "__main__":
     with open(args.rules, "r") as f:
         yaml_content = f.read()
 
-    # Load symbols and rules
-    phandle_to_path, path_to_symbol = parse_dts_symbols(dts_content)
-    rules = load_yaml_rules(yaml_content)
-
     # Parse DTS into a structured format (JSON or dictionary)
     dts = parse_dts_content(dts_content)
+
+    # Load symbols and rules
+    phandle_to_path, path_to_symbol = parse_dts_symbols(dts)
+    rules = load_yaml_rules(yaml_content)
 
     # Restore references
     restored_dts = dereference_phandles(dts, phandle_to_path, path_to_symbol, rules)
 
     # Generate output DTS
-    output_dts = generate_restored_dts(restored_dts)
+    output_dts = generate_restored_dts(restored_dts, path_to_symbol)
     print(output_dts)

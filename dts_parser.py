@@ -49,7 +49,10 @@ def parse_dts_content(dts_content):
             elif value.startswith("[") and value.endswith("]"):
                 # Parse array of strings
                 value = [v.strip('"') for v in value[1:-1].split(",")]
-            current_node[key] = value
+            if key == 'phandle':
+                current_node[key] = value[0]
+            else:
+                current_node[key] = value
 
     return dts
 

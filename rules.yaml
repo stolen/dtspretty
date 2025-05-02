@@ -17,4 +17,6 @@ gpio:
 pinctrl:
   patterns: ['^pinctrl-']
   struct: [ref]
-rockchip,pins: [d, d, d, ref]
+rockchip,pins:
+  patterns: ['^rockchip,pins$']
+  struct: [d, d, d, ref]

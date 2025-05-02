@@ -8,17 +8,35 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
             patterns = rule.get("patterns", [])
             if any(re.match(pattern, prop) for pattern in patterns):
                 # If property matches a rule, process it using the rule's logic
-                return resolve_struct(value, rule_name)
+                return resolve_struct(value, rule_name, rule)
         # If no matching rule, return the value as-is
-        return value
+        return [value]
 
-    def resolve_struct(value, rule_name):
+    def resolve_struct(value, rule_name, rule):
         """Resolve a property value based on its rule."""
         if not isinstance(value, list):
             value = [value]  # Ensure value is a list for processing
         resolved = []
         i = 0
+        static_struct = rule.get('struct', None)
         while i < len(value):
+            if static_struct:
+                tmp = []
+                for j in static_struct:
+                    if j == 'ref':
+                        ref_path = phandle_to_path.get(value[i])
+                        ref_symbol = f"&{path_to_symbol.get(ref_path, ref_path.lstrip('/'))}"
+                        tmp.append(ref_symbol)
+                    elif j == 'd':
+                        tmp.append(str(value[i]))
+                    elif j == 'x':
+                        tmp.append(hex(value[i]))
+                    else:
+                        tmp.append(str(value[i]))
+                    i += 1
+                resolved.append(tmp)
+                continue
+                
             if isinstance(value[i], int):  # If the value is a phandle
                 # Resolve phandle to path
                 ref_path = phandle_to_path.get(value[i])
@@ -42,6 +60,8 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
                 # Get the "#clock-cells" (or equivalent) value from the referenced node
                 clock_cells_property = f"#{rule_name}-cells"
                 clock_cells = ref_node.get(clock_cells_property, 0)
+                while type(clock_cells) == list:
+                    clock_cells = clock_cells[0]
 
                 # Group the reference and the next 'clock_cells' items
                 group = [ref_symbol] + value[i + 1 : i + 1 + clock_cells]
@@ -77,6 +97,8 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
                 elif isinstance(value, list):
                     # Only process lists if the property matches a rule
                     node[key] = resolve_property(key, value)
+                elif isinstance(value, str):
+                    node[key] = [f'"{s}"' for s in value.split('\\0')]
                 else:
                     node[key] = value
 
