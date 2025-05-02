@@ -1,0 +1,51 @@
+/dts-v1/;
+/ {
+ #address-cells = <2>;
+ #size-cells = <2>;
+
+ xin24m: xin24m {
+  #clock-cells = <0>;
+ };
+
+ cru: clock-controller@ff2b0000 {
+  compatible = "rockchip,px30-cru";
+  reg = <0x0 0xff2b0000 0x0 0x1000>;
+  clocks = <&xin24m>, <&pmucru 1>;
+  clock-names = "xin24m", "gpll";
+  #clock-cells = <1>;
+  #reset-cells = <1>;
+
+  assigned-clocks = <&cru 4>,
+   <&cru 320>, <&cru 73>;
+
+  assigned-clock-rates = <1188000000>,
+   <100000000>, <200000000>;
+ };
+
+ pmucru: clock-controller@ff2bc000 {
+  compatible = "rockchip,px30-pmucru";
+  reg = <0x0 0xff2bc000 0x0 0x1000>;
+  clocks = <&xin24m>;
+  clock-names = "xin24m";
+  #clock-cells = <1>;
+  #reset-cells = <1>;
+ };
+
+ i2c0 {
+   sfc_cs0: i2c0-xfer {
+    rockchip,pins =
+     <0 8 1 &pcfg_pull_none_smt>,
+     <0 9 1 &pcfg_pull_none_smt>;
+   };
+   sfc_clk: sfc-clk {
+    rockchip,pins =
+     <1 9 3 &pcfg_pull_none_smt>;
+   };
+  };
+ pcfg_pull_none_smt: pcfg-pull-none-smt {
+  };
+ sfc {
+  pinctrl-0 = <&sfc_clk &sfc_cs0>;
+  };
+
+};
