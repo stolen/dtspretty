@@ -10,52 +10,55 @@
 #  - if property being parsed is named 'clock', then number of cells is indicated by '#clock-cells' property of referenced object
 #  - cells follow ref and are kept as numbers
 #  - after cells comes next ref
-address:
-  patterns: ['interrupt-parent', 'operating-points-v2']
-reg: [x, x, d, x]
-cpu-idle-states:
-  patterns: ['cpu-idle-states']
-  struct: [ref, ref]
-clock:
-  patterns: ['^clocks$', '-clocks$']
-io-channel:
-  patterns: ['^io-channels$']
-power-domain:
-  patterns: ['^power-domains$']
-pm_qos:
-  patterns: ['^pm_qos$']
-  struct: [ref]
-thermal-sensor:
-  patterns: ['^thermal-sensors$']
-trip: [ref]
-cooling:
-  patterns: ['^cooling-device$']
-dma:
-  patterns: ['^dmas$']
-phy:
-  patterns: ['^phys$']
-reset:
-  patterns: ['^resets$']
-iommmu:
-  patterns: ['^iommus$']
+$extends:
+  - base.yaml
+
 gpio:
   patterns: ['^gpios?$', '-gpios?$', '_gpio$', '_irq$']
-pwm:
-  patterns: ['^pwms$']
-devfreq-events: [ref]
-interrupts: [d, d, d]
-interrupt-affinity: [ref]
-remote-endpoint: [ref]
-ports: [ref]
-supply:
-  patterns: ['.*-supply$']
-  struct: [ref]
-sound-dai: [ref]
-pinctrl:
-  patterns: ['^pinctrl-']
-  struct: [ref, ref, ref, ref, ref]
+  struct: [ref, $gpio-pin, $gpio-active]
 rockchip,pins:
   patterns: ['^rockchip,pins$']
-  struct: [d, d, d, ref]
+  struct: [d, $gpio-pin, $gpio-func, ref]
 rockchip-ref:
   patterns: ['^rockchip,(cpu|pmu|grf|codec)$']
+
+
+# grep RK_P tmp/rockchip.h | sed -E 's|^#define ([^ \t]*)[ \t]+([0-9]+)$|  \2: \1|' >> rk.yaml
+$mapping-gpio-pin:
+  $include: "<dt-bindings/pinctrl/rockchip.h>"
+  0: RK_PA0
+  1: RK_PA1
+  2: RK_PA2
+  3: RK_PA3
+  4: RK_PA4
+  5: RK_PA5
+  6: RK_PA6
+  7: RK_PA7
+  8: RK_PB0
+  9: RK_PB1
+  10: RK_PB2
+  11: RK_PB3
+  12: RK_PB4
+  13: RK_PB5
+  14: RK_PB6
+  15: RK_PB7
+  16: RK_PC0
+  17: RK_PC1
+  18: RK_PC2
+  19: RK_PC3
+  20: RK_PC4
+  21: RK_PC5
+  22: RK_PC6
+  23: RK_PC7
+  24: RK_PD0
+  25: RK_PD1
+  26: RK_PD2
+  27: RK_PD3
+  28: RK_PD4
+  29: RK_PD5
+  30: RK_PD6
+  31: RK_PD7
+
+$mapping-gpio-func:
+  $include: "<dt-bindings/pinctrl/rockchip.h>"
+  0: RK_FUNC_GPIO

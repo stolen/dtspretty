@@ -4,18 +4,21 @@ import sys, argparse
 import yaml
 import json
 import re
+import os.path as path
 from dts_parser import parse_dts_content
 from parse_dts_symbols import parse_dts_symbols
 from dereference_phandles import dereference_phandles
 from generate_restored_dts import generate_restored_dts
 
-def load_yaml_rules(yaml_content):
+def load_yaml_rules(rules_path):
     """Load dereferencing rules from YAML content."""
-    rules = yaml.safe_load(yaml_content)
+    rules = recursive_load_yaml(rules_path)
 
     # Normalize rules to ensure all entries are dictionaries
     for key, value in rules.items():
-        if isinstance(value, list):
+        if key[0] == '$':
+            continue
+        elif isinstance(value, list):
             # Treat a list directly as a struct
             rules[key] = {"patterns": [f'^{key}$'], "struct": value}
         elif isinstance(value, dict):
@@ -26,6 +29,18 @@ def load_yaml_rules(yaml_content):
     
     return rules
 
+def recursive_load_yaml(rules_path):
+    # Load YAML rules
+    with open(rules_path, "r") as f:
+         rules = yaml.safe_load(f.read())
+
+    if "$extends" in rules:
+        for e in rules["$extends"]:
+            base_path = path.join(path.dirname(rules_path), e)
+            base_rules = recursive_load_yaml(base_path)
+            rules = base_rules | rules
+
+    return rules
 
 # Example usage
 if __name__ == "__main__":
@@ -45,16 +60,12 @@ if __name__ == "__main__":
         with open(args.src, "r") as f:
             dts_content = f.read()
 
-    # Load YAML rules
-    with open(args.rules, "r") as f:
-        yaml_content = f.read()
-
     # Parse DTS into a structured format (JSON or dictionary)
     dts = parse_dts_content(dts_content)
 
     # Load symbols and rules
     phandle_to_path, path_to_symbol = parse_dts_symbols(dts)
-    rules = load_yaml_rules(yaml_content)
+    rules = load_yaml_rules(args.rules)
 
     # Restore references
     restored_dts = dereference_phandles(dts, phandle_to_path, path_to_symbol, rules)

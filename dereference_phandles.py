@@ -5,10 +5,13 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
     def resolve_property(prop, value):
         """Resolve property references based on rules."""
         for rule_name, rule in rules.items():
+            if rule_name[0] == '$':
+                continue
             patterns = rule.get("patterns", [])
             if any(re.search(pattern, prop) for pattern in patterns):
                 # If property matches a rule, process it using the rule's logic
-                return resolve_struct(value, rule_name, rule)
+                resolved = resolve_struct(value, rule_name, rule)
+                return resolved
         # If no matching rule, return the value as-is
         return [value]
 
@@ -25,16 +28,25 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
                 for j in static_struct:
                     if i >= len(value):
                         continue
+                    v = value[i]
                     if j == 'ref':
-                        ref_path = phandle_to_path.get(value[i])
+                        ref_path = phandle_to_path.get(v)
                         ref_symbol = f"&{path_to_symbol.get(ref_path, ref_path.lstrip('/'))}"
                         tmp.append(ref_symbol)
                     elif j == 'd':
-                        tmp.append(str(value[i]))
+                        tmp.append(str(v))
                     elif j == 'x':
-                        tmp.append(hex(value[i]))
+                        tmp.append(hex(v))
+                    elif j[0] == '$':
+                        mapping = rules.get('$mapping-' + j[1:], {})
+                        includes = dts['$includes']
+                        if '$include' in mapping:
+                            include = mapping['$include']
+                            if include not in includes:
+                                includes.append(mapping['$include'])
+                        tmp.append(mapping.get(v, str(v)))
                     else:
-                        tmp.append(str(value[i]))
+                        tmp.append(str(v))
                     i += 1
                 resolved.append(tmp)
                 continue
@@ -94,7 +106,9 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
         """Recursively process a node."""
         if isinstance(node, dict):
             for key, value in node.items():
-                if isinstance(value, dict):
+                if key[0] == '$':
+                    pass
+                elif isinstance(value, dict):
                     process_node(value)
                 elif isinstance(value, list):
                     # Only process lists if the property matches a rule
@@ -104,6 +118,7 @@ def dereference_phandles(dts, phandle_to_path, path_to_symbol, rules):
                 else:
                     node[key] = value
 
+    dts['$includes'] = []
     process_node(dts)
     return dts
 

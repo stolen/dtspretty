@@ -55,6 +55,14 @@ def generate_restored_dts(restored_dts, path_to_symbol):
 
     # Render the root node
     rendered_dts = "/dts-v1/;\n\n"
+
+    includes = restored_dts.get('$includes', [])
+    del restored_dts['$includes']
+    if len(includes) > 0:
+        for i in includes:
+            rendered_dts += "#include " + i + "\n"
+        rendered_dts += "\n"
+
     rendered_dts += "/ {\n"
     del restored_dts['__symbols__']
     rendered_dts += render_node(restored_dts)

@@ -41,10 +41,11 @@ This is a real output of dtspretty when given a dts with above snippet as input:
     uart0: serial@ff030000 {
         compatible = "rockchip,px30-uart", "snps,dw-apb-uart";
         reg = <0x0 0xff030000 0 0x100>;
-        interrupts = <0 15 4>;
+        interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
         clocks = <&pmucru 6>, <&pmucru 21>;
         clock-names = "baudclk", "apb_pclk";
         dmas = <&dmac 0>, <&dmac 1>;
+        dma-names = "tx", "rx";
         reg-shift = <2>;
         reg-io-width = <4>;
         pinctrl-names = "default";
